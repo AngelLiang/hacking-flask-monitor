@@ -8,12 +8,13 @@ from influxdb.client import InfluxDBClientError
 
 
 class ObserverInfluxdb(ObserverMetrics):
+    """Influxdb观察者"""
 
     def __init__(self, host, port, user, password, db, measure='flask', *args, **kw):
         ObserverMetrics.__init__(self, *args, **kw)
         self._data = [
             {
-                "measurement": measure,
+                "measurement": measure,  # default is 'flask'
                 "tags": {},
                 "fields": {},
             }
@@ -29,6 +30,7 @@ class ObserverInfluxdb(ObserverMetrics):
         
 
     def action(self, event):
+        """指标入库"""
         try:
             data = self._data
             data[0]['tags'] = event.dict  

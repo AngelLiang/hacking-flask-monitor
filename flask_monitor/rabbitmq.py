@@ -18,14 +18,17 @@ class ObserverRabbit(ObserverMetrics):
                        routing_key='',
                        *args,
                        **kw):
+        # 从 kw 获取 RabbitMQ 的参数
         kw_mq = { key : kw[key] for key in kw if key in self.args_mq}
+        # 从 kw 获取非 RabbitMQ 的参数
         kw = { key : kw[key] for key in kw if key not in self.args_mq}
+        # 非RabbitMQ参数传给 ObserverMetrics
         ObserverMetrics.__init__(self, *args, **kw)
         try:
-            
+            # RabbitMQ参数传给pika
             connection = pika.BlockingConnection(pika.ConnectionParameters(**kw_mq))
             self.channel = connection.channel()
-            self.exchange = exchange
+            self.exchange = exchange  # default is 'flask'
             self.routing_key = routing_key
             try:
                 self.channel.exchange_declare(exchange=exchange,
@@ -38,6 +41,7 @@ class ObserverRabbit(ObserverMetrics):
         
 
     def action(self, event):
+        """发布消息"""
         try:
             self.channel.basic_publish(exchange=self.exchange,
                                   routing_key=self.routing_key,

@@ -66,11 +66,13 @@ class Event(object):
 
 
 class EventMetrics(object):
+    """指标事件"""
     
     def __init__(self):
         self._obs = []
     
     def __iadd__(self, obs):
+        """替代obs.append()"""
         if not callable(obs):
             raise TypeError("objet not callable")
         if obs not in self._obs:
@@ -78,6 +80,7 @@ class EventMetrics(object):
         return self
 
     def __isub__(self, obs):
+        """替代obs.remove()"""
         if obs in self._obs:
             self._obs.remove(obs)
         return self
@@ -101,25 +104,31 @@ class Singleton(type):
 
 import six
 
-@six.add_metaclass(Singleton)
+@six.add_metaclass(Singleton)  # 单例模式
 class Monitor(Blueprint):
 
     def __init__(self, *args, **kwargs):
         Blueprint.__init__(self, *args, **kwargs)
         self._event = EventMetrics()
+        # 注册 app 请求前回调函数
         self.before_app_request(start_event)
+        # 注册 app 请求后回调函数
         self.after_app_request(stop_event)
 
     def add_observer(self, obs):
+        """添加观察者"""
         self._event += obs
 
     def del_observer(self, obs):
+        """移除观察者"""
         self._event -= obs
 
     def add_metric(self, event):
+        """添加指标"""
         self._event(event)
 
 class ObserverMetrics(object):
+    """指标观察者"""
 
     def __init__(self, filter=everyTrue, logger='werkzeug'):
         self._filter = filter
@@ -131,6 +140,7 @@ class ObserverMetrics(object):
             self.action(event)
 
     def action(self, event):
+        """动作"""
         pass
 
 
